@@ -1,4 +1,4 @@
-# Small Language Model (SLM) ~75M from Scratch on Apple M2 (16GB)
+# Small Language Model (SLM) ~54M from Scratch on Apple M2 (16GB)
 
 > **State of the Art Framing (§0)**: At ~75M parameters, no model competes with frontier LLMs on general capability. "State of the art" in this project means **state of the art for this parameter budget and compute envelope** — extracting maximum quality from 75M parameters and a single Apple M2 chip by using training recipes and architectural choices empirically proven to punch above their weight at small scale (depth-over-width allocation, Grouped-Query Attention, tied embeddings, document-aware packing, Warmup-Stable-Decay with quality annealing).
 
