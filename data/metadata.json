@@ -1,0 +1,14 @@
+{
+  "dataset_version": "2.0_clean_20m",
+  "tokenizer_vocab_size": 32768,
+  "seed": 42,
+  "total_tokens": 20000131,
+  "train_tokens": 19034986,
+  "val_tokens": 965145,
+  "total_documents": 48788,
+  "domains": {
+    "fineweb_edu": 8000254,
+    "tinystories": 7999659,
+    "cosmopedia_v2": 4000218
+  }
+}

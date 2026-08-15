@@ -1,0 +1,20 @@
+# Model architecture configuration
+# Chosen via parameter-count-driven search (§4):
+#   20 layers, H=512, GQA 8:4, V=16384 → 71.3M params (88.2% in transformer)
+#   Maximizes depth within 65-85M budget, per small-model scaling findings.
+
+model:
+  vocab_size: 32768           # 32K vocab size per prompt §18
+  max_seq_len: 1024           # Context length (supports 512/1024/2048)
+  hidden_size: 512            # Embedding / residual stream dimension
+  num_layers: 12              # 12 layers → 54.5M parameters (68% faster training speed)
+  num_query_heads: 8          # head_dim = 512/8 = 64
+  num_kv_heads: 4             # GQA: frees params for more depth
+  intermediate_size: auto     # SwiGLU 2.67× → 1536 (auto-calculated)
+  dropout: 0.0                # No dropout by default at this scale
+  attention_dropout: 0.0
+  rms_norm_eps: 1.0e-5
+  rope_theta: 10000
+  use_bias: false             # No bias in linear layers (modern practice)
+  tie_embeddings: true        # Share embedding + LM head weights
+  residual_scale_init: true   # 1/sqrt(2*num_layers) on residual output projections

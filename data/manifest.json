@@ -1,0 +1,173 @@
+{
+  "dataset_name": "50M Token Multi-Domain SLM Pretraining Corpus",
+  "created_at": "2026-08-13 15:43:38 UTC",
+  "total_corpus_tokens": 60005339,
+  "train_tokens": 56894010,
+  "val_tokens": 3111329,
+  "vocab_size": 32768,
+  "eos_token_id": 0,
+  "total_build_time_seconds": 440.8,
+  "domain_mixture": [
+    {
+      "domain_name": "FineWeb-Edu",
+      "raw_filename": "fineweb_edu_clean.jsonl",
+      "target_tokens": 20000000,
+      "collected_tokens": 20000115,
+      "token_percentage": 33.33,
+      "raw_doc_count": 19391,
+      "accepted_doc_count": 19391,
+      "rejected_duplicate_count": 0,
+      "rejected_quality_count": 0
+    },
+    {
+      "domain_name": "Cosmopedia v2",
+      "raw_filename": "cosmopedia_v2_clean.jsonl",
+      "target_tokens": 8000000,
+      "collected_tokens": 8000595,
+      "token_percentage": 13.33,
+      "raw_doc_count": 10888,
+      "accepted_doc_count": 10885,
+      "rejected_duplicate_count": 0,
+      "rejected_quality_count": 3
+    },
+    {
+      "domain_name": "High-Quality Code",
+      "raw_filename": "coding_clean.jsonl",
+      "target_tokens": 7000000,
+      "collected_tokens": 7001427,
+      "token_percentage": 11.67,
+      "raw_doc_count": 95004,
+      "accepted_doc_count": 20161,
+      "rejected_duplicate_count": 72718,
+      "rejected_quality_count": 2125
+    },
+    {
+      "domain_name": "Mathematics",
+      "raw_filename": "math_clean.jsonl",
+      "target_tokens": 5000000,
+      "collected_tokens": 5001496,
+      "token_percentage": 8.34,
+      "raw_doc_count": 15215,
+      "accepted_doc_count": 9000,
+      "rejected_duplicate_count": 6203,
+      "rejected_quality_count": 12
+    },
+    {
+      "domain_name": "High-Quality Q&A",
+      "raw_filename": "qa_clean.jsonl",
+      "target_tokens": 5000000,
+      "collected_tokens": 5000255,
+      "token_percentage": 8.33,
+      "raw_doc_count": 53562,
+      "accepted_doc_count": 49403,
+      "rejected_duplicate_count": 0,
+      "rejected_quality_count": 4159
+    },
+    {
+      "domain_name": "Wikipedia",
+      "raw_filename": "wikipedia_clean.jsonl",
+      "target_tokens": 13000000,
+      "collected_tokens": 13001366,
+      "token_percentage": 21.67,
+      "raw_doc_count": 2581,
+      "accepted_doc_count": 2581,
+      "rejected_duplicate_count": 0,
+      "rejected_quality_count": 0
+    },
+    {
+      "domain_name": "Stories",
+      "raw_filename": "stories_clean.jsonl",
+      "target_tokens": 2000000,
+      "collected_tokens": 2000085,
+      "token_percentage": 3.33,
+      "raw_doc_count": 9279,
+      "accepted_doc_count": 9279,
+      "rejected_duplicate_count": 0,
+      "rejected_quality_count": 0
+    }
+  ],
+  "shards": {
+    "train": [
+      {
+        "filename": "shard_00000.bin",
+        "num_tokens": 5000000,
+        "bytes": 10000000,
+        "sha256": "ecc9e78a6188e84140f2609844d38b725421316a419fae751cf4decf1dd4dc69"
+      },
+      {
+        "filename": "shard_00001.bin",
+        "num_tokens": 5000000,
+        "bytes": 10000000,
+        "sha256": "79fbb655bc27cd8a85540bb26f6f0fd11e3ac63c32e0726ec3620622ae8bbc82"
+      },
+      {
+        "filename": "shard_00002.bin",
+        "num_tokens": 5000000,
+        "bytes": 10000000,
+        "sha256": "ce3c1df536710865deaabebae425353876e6a41578bcb3e9fefe40d635edfdae"
+      },
+      {
+        "filename": "shard_00003.bin",
+        "num_tokens": 5000000,
+        "bytes": 10000000,
+        "sha256": "45e2bcd330261779b87e2a591645aaf09e7774cf9a4419d9fe705a7d7af4dcb4"
+      },
+      {
+        "filename": "shard_00004.bin",
+        "num_tokens": 5000000,
+        "bytes": 10000000,
+        "sha256": "6549463583109883565808943235d0aecfd36d3be835d1db6d57ae00c3992fd3"
+      },
+      {
+        "filename": "shard_00005.bin",
+        "num_tokens": 5000000,
+        "bytes": 10000000,
+        "sha256": "5864af6d0c5f90596ce7c7891c900c51ad945a3cf47128d5a1470f040a726ead"
+      },
+      {
+        "filename": "shard_00006.bin",
+        "num_tokens": 5000000,
+        "bytes": 10000000,
+        "sha256": "04974bd724d7e495d0a9ed0e86a47b9bfdad2fb76a1e91e789b367fe9942e8de"
+      },
+      {
+        "filename": "shard_00007.bin",
+        "num_tokens": 5000000,
+        "bytes": 10000000,
+        "sha256": "3100c3a47f62ef1453cf25ad36c49eb13369bb4b8c11ce75843281403af86793"
+      },
+      {
+        "filename": "shard_00008.bin",
+        "num_tokens": 5000000,
+        "bytes": 10000000,
+        "sha256": "545784a89427042f845bf5d2bf38cb1d1ba6b56ef2d09cbd79d6a0d1fdd95e77"
+      },
+      {
+        "filename": "shard_00009.bin",
+        "num_tokens": 5000000,
+        "bytes": 10000000,
+        "sha256": "437a1df5b5854bce1d96aa10b1de7230d427afc8205d88007b761e1ae8dda597"
+      },
+      {
+        "filename": "shard_00010.bin",
+        "num_tokens": 5000000,
+        "bytes": 10000000,
+        "sha256": "3a9ca94041a0d4e0e6dee944cc19dbf403f080d8d8599c4f6912637cbd9c76a0"
+      },
+      {
+        "filename": "shard_00011.bin",
+        "num_tokens": 1894010,
+        "bytes": 3788020,
+        "sha256": "44b3d089dcd3cf8b90088cacf5136c8dd45f6db85561723bb1ed31698ed16b44"
+      }
+    ],
+    "val": [
+      {
+        "filename": "shard_00000.bin",
+        "num_tokens": 3111329,
+        "bytes": 6222658,
+        "sha256": "b0ebff75cd0183c818fb53f2ed77b7c9db353c1227056e95937d633ac70647c5"
+      }
+    ]
+  }
+}

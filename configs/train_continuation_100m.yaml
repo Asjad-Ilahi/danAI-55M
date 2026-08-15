@@ -1,0 +1,53 @@
+# Continuation training configuration for 100M Token Multi-Domain dataset
+# Scaling model from 137M tokens -> 237M tokens (resuming from exp_007 step 4,180)
+
+training:
+  # Continuation mode flags
+  continuation: true
+  continuation_warmup_steps: 50
+  reset_optimizer: false               # Keep optimizer momentum/variance from exp_007
+
+  # Batch size
+  micro_batch_size: 4                  # Micro-batch size 4 for high M2 throughput
+  gradient_accumulation_steps: 8       # Effective batch = 4 * 8 * 1024 = 32,768 tokens/step
+  max_seq_len: 1024                    # Context length
+
+  # Token budget (136.97M existing + 100.0M new tokens = ~237.0M total tokens -> ~7,232 total steps)
+  max_tokens: 237000000
+
+  # Learning Rate Schedule (WSD)
+  schedule: wsd
+  learning_rate: 3.0e-4                # Peak learning rate
+  min_learning_rate: 1.0e-5            # Floor LR for final annealing decay
+  annealing_fraction: 0.08             # Final 8% of tokens (~19M tokens) decay phase
+  warmup_ratio: 0.02
+
+  # Optimizer (AdamW)
+  weight_decay: 0.1
+  beta1: 0.9
+  beta2: 0.95
+  eps: 1.0e-8
+  grad_clip: 1.0                       # Max gradient norm
+
+  # Precision
+  precision: auto                      # auto: bf16 -> fp16 -> fp32
+
+  # Memory optimization
+  gradient_checkpointing: false
+
+  # EMA
+  ema_decay: 0.999
+
+  # Logging & checkpointing
+  validation_interval: 50              # Validate every 50 steps (~1.6M tokens)
+  checkpoint_interval: 100             # Checkpoint every 100 steps
+  log_interval: 1                      # Log metrics for EVERY step
+
+  # Reproducibility
+  seed: 42
+
+  # Data loader
+  num_workers: 0
+
+  # Document-aware packing
+  pack_with_document_mask: true

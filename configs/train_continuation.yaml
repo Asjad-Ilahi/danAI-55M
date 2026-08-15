@@ -1,0 +1,53 @@
+# Continuation training configuration
+# Designed for safe, non-regressive continuation of exp_005 (76.97M tokens baseline)
+
+training:
+  # Continuation mode flags
+  continuation: true
+  continuation_warmup_steps: 50
+  reset_optimizer: false               # Keep existing optimizer state or reset if needed
+
+  # Batch size
+  micro_batch_size: 4                  # Micro-batch size 4
+  gradient_accumulation_steps: 8       # Effective batch = 4 * 8 * 1024 = 32,768 tokens
+  max_seq_len: 1024                    # Context length
+
+  # Token budget (76.97M existing + 60.0M new tokens = ~137.0M total tokens)
+  max_tokens: 137000000
+
+  # Conservative Continuation Learning Rate Schedule
+  schedule: wsd
+  learning_rate: 3.0e-4                # Peak learning rate
+  min_learning_rate: 1.0e-5            # Floor LR
+  annealing_fraction: 0.08             # Final 8% of tokens = LR decay + high-quality data
+  warmup_ratio: 0.02                   # Fallback warmup ratio
+
+  # Optimizer (AdamW)
+  weight_decay: 0.1
+  beta1: 0.9
+  beta2: 0.95
+  eps: 1.0e-8
+  grad_clip: 1.0                       # Max gradient norm
+
+  # Precision
+  precision: auto                      # auto: bf16 → fp16 → fp32
+
+  # Memory optimization
+  gradient_checkpointing: false
+
+  # EMA
+  ema_decay: 0.999
+
+  # Logging & checkpointing
+  validation_interval: 25             # Frequent validation during continuation
+  checkpoint_interval: 100
+  log_interval: 1                      # Log metrics for EVERY step
+
+  # Reproducibility
+  seed: 42
+
+  # Data loader
+  num_workers: 0
+
+  # Document-aware packing
+  pack_with_document_mask: true

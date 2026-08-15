@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+eggs/
+*.egg
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Large raw & binary data files
+data*/raw/
+data*/cleaned/
+data*/processed/
+data*/reports/
+data*/shards/
+data_sft/*.jsonl
+*.bin
+*.jsonl
+
+# Large model checkpoint binaries (>100MB)
+checkpoints/*.pt
+experiments/**/*.pt
+experiments/**/checkpoints/
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# Tokenizer artifacts (trained, potentially large)
+tokenizer/*.model
+
+# Logs
+logs/*.jsonl
+logs/*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# -----------------------------------------------------------------------------
+# Explicit Inclusions: Keep essential manifests, metadata, tokenizer & configs
+# -----------------------------------------------------------------------------
+!data/manifest.json
+!data_100m/manifest.json
+!data_sft/manifest.json
+!data/historical_doc_hashes.json.gz
+!experiments/**/config.yaml
+!experiments/**/metrics.jsonl
+!tokenizer/tokenizer.json
+!tokenizer/tokenizer_config.json
+!data/raw/.gitkeep
+!data/cleaned/.gitkeep
+!data/processed/train/.gitkeep
+!data/processed/validation/.gitkeep
+!data/reports/.gitkeep
+!checkpoints/.gitkeep
+!logs/.gitkeep
+!experiments/.gitkeep
+!tokenizer/.gitkeep

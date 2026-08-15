@@ -1,0 +1,73 @@
+# Dataset configuration for 50M pilot and scalable 500M target
+version: "1.0"
+target_tokens: 20000000        # 20M clean dataset run
+
+# Target mixture proportions (must sum to 100)
+mixture:
+  fineweb:
+    percentage: 30.0
+    dataset_name: "HuggingFaceFW/fineweb"
+    subset: "sample-10BT"
+    type: "text"
+  fineweb_edu:
+    percentage: 30.0
+    dataset_name: "HuggingFaceFW/fineweb-edu"
+    subset: "sample-10BT"
+    type: "text"
+  cosmopedia:
+    percentage: 15.0
+    dataset_name: "HuggingFaceTB/cosmopedia"
+    subset: "auto_math_text"
+    type: "text"
+  starcoder:
+    percentage: 10.0
+    dataset_name: "codeparrot/codeparrot-clean-train"
+    type: "code"
+  openwebmath:
+    percentage: 7.5
+    dataset_name: "open-web-math/open-web-math"
+    type: "math"
+  wikipedia:
+    percentage: 5.0
+    dataset_name: "wikimedia/wikipedia"
+    subset: "20231101.en"
+    type: "text"
+  misc:
+    percentage: 2.5
+    dataset_name: "HuggingFaceTB/cosmopedia"
+    subset: "stories"
+    type: "text"
+
+# Cleaning and Quality Thresholds
+filtering:
+  min_doc_chars: 50
+  max_doc_chars: 1000000
+  min_word_count: 5
+  max_repeating_char_run: 50
+  min_alpha_ratio: 0.50
+  max_symbol_ratio: 0.25
+  max_duplicate_line_fraction: 0.40
+
+# Cross-dataset Deduplication
+deduplication:
+  exact_hash: true
+  minhash:
+    enabled: true
+    num_perm: 64
+    ngram_size: 13
+    threshold: 0.80
+
+# Split & Sharding
+split:
+  train_ratio: 0.95
+  val_ratio: 0.05
+  split_level: "document"
+  seed: 42
+
+output:
+  raw_dir: "data/raw"
+  cleaned_dir: "data/cleaned"
+  tokenized_dir: "data/tokenized"
+  shards_dir: "data/shards"
+  manifest_file: "data/manifest.json"
+  metadata_file: "data/metadata.json"

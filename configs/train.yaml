@@ -1,0 +1,48 @@
+# Training configuration
+# Designed for Apple M2 16GB with ~10-12GB practical headroom.
+
+training:
+  # Batch size
+  micro_batch_size: 4                  # Micro-batch size 4 for high throughput
+  gradient_accumulation_steps: 8       # Effective batch = 4 * 8 * 1024 = 32,768 tokens
+  max_seq_len: 1024                    # Must match model.max_seq_len
+
+  # Token budget
+  max_tokens: 137000000                # 137.0M total budget (77.0M previous + 60.0M new dataset = 4,180 total steps)
+
+  # Learning rate schedule
+  schedule: wsd                        # 'wsd' (recommended) or 'cosine'
+  learning_rate: 3.0e-4                # Peak learning rate
+  min_learning_rate: 3.0e-5            # 10% of peak, for cosine / WSD decay floor
+  annealing_fraction: 0.08             # Final 8% of tokens = LR decay + high-quality data
+  warmup_ratio: 0.02                   # Linear warmup for first 2% of steps
+
+  # Optimizer (AdamW)
+  weight_decay: 0.1
+  beta1: 0.9
+  beta2: 0.95
+  eps: 1.0e-8
+  grad_clip: 1.0                       # Max gradient norm
+
+  # Precision
+  precision: auto                      # auto: bf16 → fp16 → fp32
+
+  # Memory optimization
+  gradient_checkpointing: false        # Disabled for max speed (~1,088 tok/s)
+
+  # EMA
+  ema_decay: 0.999                     # EMA decay for eval/generation, 0 disables
+
+  # Logging & checkpointing
+  validation_interval: 50             # Validate every 200 steps
+  checkpoint_interval: 100             # Checkpoint every 500 steps
+  log_interval: 1                      # Log metrics for EVERY step per user request
+
+  # Reproducibility
+  seed: 42
+
+  # Data loader
+  num_workers: 0                       # Start conservative, benchmark before raising
+
+  # Document-aware packing
+  pack_with_document_mask: true        # Block-diagonal causal mask across doc boundaries
