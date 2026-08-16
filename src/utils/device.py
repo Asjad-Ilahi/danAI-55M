@@ -141,7 +141,7 @@ def print_device_info(device: torch.device, precision: torch.dtype) -> None:
         print(f"  CUDA version:     {torch.version.cuda}")
         props = torch.cuda.get_device_properties(device)
         print(f"  GPU:              {props.name}")
-        print(f"  GPU memory:       {props.total_mem / 1024**3:.1f} GB")
+        print(f"  GPU memory:       {props.total_memory / 1024**3:.1f} GB")
     
     bf16_ok = check_bf16_support(device)
     fp16_ok = check_fp16_support(device)

@@ -249,7 +249,9 @@ class Trainer:
                     self.val_dataset,
                     self.device,
                     self.precision_mgr,
+                    max_eval_batches=getattr(self.config.training, "max_eval_batches", 100),
                     ema_model=self.ema_model,
+                    step=self.step,
                 )
                 is_best = val_loss < self.best_val_loss
                 if is_best:

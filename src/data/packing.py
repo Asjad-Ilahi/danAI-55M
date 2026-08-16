@@ -8,14 +8,14 @@ so tokens can only attend to earlier tokens WITHIN THEIR OWN DOCUMENT.
 """
 
 import torch
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple, Dict, Any, Iterator
 
 
 def pack_documents(
     documents_tokens: List[List[int]],
     max_seq_len: int,
     eos_token_id: int,
-) -> Iterator_or_List_Tuple:
+) -> Iterator[Tuple[List[int], List[int]]]:
     """
     Pack EOS-terminated documents into fixed-size sequences of length max_seq_len.
     Returns (packed_token_ids, segment_ids).

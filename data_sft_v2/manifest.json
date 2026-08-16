@@ -1,0 +1,104 @@
+{
+  "dataset_name": "15M Token Weakness-Targeted SFT V2 for 54.5M SLM",
+  "version": "2.0",
+  "created_at": "2026-08-16 17:34:42 UTC",
+  "target_tokens": 15000000,
+  "actual_total_tokens": 15001869,
+  "train_tokens": 14260341,
+  "val_tokens": 741528,
+  "train_examples": 110717,
+  "val_examples": 5824,
+  "total_examples": 116541,
+  "build_time_seconds": 434.3,
+  "domain_distribution": [
+    {
+      "domain": "smoltalk",
+      "total_examples": 7271,
+      "total_tokens": 3000655,
+      "percentage_of_corpus": 100.0,
+      "train_examples": 6908,
+      "train_tokens": 2848835,
+      "val_examples": 363,
+      "val_tokens": 151820
+    },
+    {
+      "domain": "math",
+      "total_examples": 29703,
+      "total_tokens": 2505046,
+      "percentage_of_corpus": 45.5,
+      "train_examples": 28218,
+      "train_tokens": 2385862,
+      "val_examples": 1485,
+      "val_tokens": 119184
+    },
+    {
+      "domain": "science",
+      "total_examples": 15900,
+      "total_tokens": 2250141,
+      "percentage_of_corpus": 29.01,
+      "train_examples": 15105,
+      "train_tokens": 2141068,
+      "val_examples": 795,
+      "val_tokens": 109073
+    },
+    {
+      "domain": "gk",
+      "total_examples": 11050,
+      "total_tokens": 2250126,
+      "percentage_of_corpus": 22.49,
+      "train_examples": 10498,
+      "train_tokens": 2138227,
+      "val_examples": 552,
+      "val_tokens": 111899
+    },
+    {
+      "domain": "logic",
+      "total_examples": 42743,
+      "total_tokens": 1500012,
+      "percentage_of_corpus": 13.04,
+      "train_examples": 40606,
+      "train_tokens": 1424835,
+      "val_examples": 2137,
+      "val_tokens": 75177
+    },
+    {
+      "domain": "coding",
+      "total_examples": 2991,
+      "total_tokens": 1500716,
+      "percentage_of_corpus": 11.54,
+      "train_examples": 2842,
+      "train_tokens": 1427092,
+      "val_examples": 149,
+      "val_tokens": 73624
+    },
+    {
+      "domain": "tulu3",
+      "total_examples": 4352,
+      "total_tokens": 1500062,
+      "percentage_of_corpus": 10.34,
+      "train_examples": 4135,
+      "train_tokens": 1424495,
+      "val_examples": 217,
+      "val_tokens": 75567
+    },
+    {
+      "domain": "qa",
+      "total_examples": 2531,
+      "total_tokens": 495111,
+      "percentage_of_corpus": 3.3,
+      "train_examples": 2405,
+      "train_tokens": 469927,
+      "val_examples": 126,
+      "val_tokens": 25184
+    }
+  ],
+  "quality_metrics": {
+    "math_examples_verified": 29703,
+    "rejected_duplicates": 1,
+    "rejected_non_english": 5150,
+    "rejected_length": 9839,
+    "rejected_quality": 6144,
+    "rejected_code_syntax": 76
+  },
+  "design_rationale": "Weakness-targeted mixture overweighting Logic (0%\u219210%), Science (33%\u219215%), GK (33%\u219215%) based on diagnostic benchmark results."
+}

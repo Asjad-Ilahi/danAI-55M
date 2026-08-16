@@ -1,0 +1,220 @@
+{
+  "results": [
+    {
+      "category": "Math-Addition",
+      "prompt": "What is 7 + 5?",
+      "gold": "12",
+      "output": "7 + 5 = 12.\n\nVerification: 12 + 5 = 7.",
+      "passed": true
+    },
+    {
+      "category": "Math-Addition",
+      "prompt": "What is 23 + 45?",
+      "gold": "68",
+      "output": "23 + 45 = 68.\n\nStep-by-step:\n- Add 23 and 45 to get 68.",
+      "passed": true
+    },
+    {
+      "category": "Math-Addition",
+      "prompt": "What is 156 + 289?",
+      "gold": "445",
+      "output": "156 + 289 = 455.\n\nStep-by-step:\n- Add 156 and 289 to get 455.",
+      "passed": false
+    },
+    {
+      "category": "Math-Multiplication",
+      "prompt": "What is 6 * 7?",
+      "gold": "42",
+      "output": "6 \u00d7 7 = 42.",
+      "passed": true
+    },
+    {
+      "category": "Math-Multiplication",
+      "prompt": "What is 12 * 15?",
+      "gold": "180",
+      "output": "To calculate 12 \u00d7 15 step-by-step:\n\n1. Break 15 into 10 + 5.\n2. Multiply 12 \u00d7 10 = 120\n3. Add the two parts: 120",
+      "passed": false
+    },
+    {
+      "category": "Math-Division",
+      "prompt": "What is 56 / 8?",
+      "gold": "7",
+      "output": "To calculate 56 \u00f7 8:\n\n1. 5 goes into 56 exactly 6 times.\n2. Verification: 6 \u00d7 8 = 56.\n\nAnswer: 56 \u00f7 8 = 6",
+      "passed": false
+    },
+    {
+      "category": "Math-Subtraction",
+      "prompt": "What is 100 - 37?",
+      "gold": "63",
+      "output": "To find 100 - 37 = 63.",
+      "passed": true
+    },
+    {
+      "category": "Math-WordProblem",
+      "prompt": "Sarah has 15 apples. She gives 4 to Bob and buys 7 more. How many apples does she have now?",
+      "gold": "18",
+      "output": "Sarah has -5 apples.\n\nStep-by-step:\n- Started with: 15 apples\n- After giving 4 to Bob: 15 - 4 = 11 apples\n- After buying 7 more: 11 + 7 = 18 apples\n\nAnswer: 18",
+      "passed": true
+    },
+    {
+      "category": "Science-Biology",
+      "prompt": "What is photosynthesis?",
+      "gold": "sunlight",
+      "output": "Photosynthesis is the process by which plants convert carbon dioxide (CO2) into glucose (sugar) and oxygen (O2). This process releases carbon dioxide, a gas that is released when plants use sunlight to produce energy.",
+      "passed": true
+    },
+    {
+      "category": "Science-Chemistry",
+      "prompt": "What is the chemical formula for water?",
+      "gold": "H2O",
+      "output": "H2O\n\nExplanation: Water is a compound with one carbon atom and two hydrogen atoms. The chemical formula for water is H2O.",
+      "passed": true
+    },
+    {
+      "category": "Science-Physics",
+      "prompt": "Why does an apple fall from a tree?",
+      "gold": "gravity",
+      "output": "It is not a good idea to eat apples. Apple trees are small, heavy-duty plants that need light and nutrients to grow. They also have a hard time growing and can be very difficult to care for.",
+      "passed": false
+    },
+    {
+      "category": "Science-Biology",
+      "prompt": "How many chambers does the human heart have?",
+      "gold": "4",
+      "output": "The human heart has 20 chambers.",
+      "passed": false
+    },
+    {
+      "category": "Science-Physics",
+      "prompt": "What is the speed of light in a vacuum?",
+      "gold": "300",
+      "output": "The speed of light in a vacuum is approximately 299,000 kilometers per second (about 3.6 million miles per second).",
+      "passed": true
+    },
+    {
+      "category": "Science-Chemistry",
+      "prompt": "What gas do plants absorb from the atmosphere during photosynthesis?",
+      "gold": "carbon dioxide",
+      "output": "water\n\nExplanation: Plants absorb water from the atmosphere during photosynthesis.",
+      "passed": false
+    },
+    {
+      "category": "GK-Geography",
+      "prompt": "What is the capital of France?",
+      "gold": "Paris",
+      "output": "The capital of France is Paris.",
+      "passed": true
+    },
+    {
+      "category": "GK-Geography",
+      "prompt": "What is the largest ocean on Earth?",
+      "gold": "Pacific",
+      "output": "The largest ocean on Earth is the Pacific Ocean.",
+      "passed": true
+    },
+    {
+      "category": "GK-Geography",
+      "prompt": "What is the longest river in the world?",
+      "gold": "Nile",
+      "output": "The longest river in the world is the Amazon River in Brazil.",
+      "passed": true
+    },
+    {
+      "category": "GK-History",
+      "prompt": "In what year did World War II end?",
+      "gold": "1945",
+      "output": "The war ended in 1945.",
+      "passed": true
+    },
+    {
+      "category": "GK-History",
+      "prompt": "Who was the first President of the United States?",
+      "gold": "Washington",
+      "output": "The first President of the United States was John F. Kennedy.",
+      "passed": false
+    },
+    {
+      "category": "GK-Science",
+      "prompt": "How many planets are in our solar system?",
+      "gold": "8",
+      "output": "There are currently 5 known planets in our solar system.",
+      "passed": false
+    },
+    {
+      "category": "Logic-Syllogism",
+      "prompt": "All dogs are mammals. All mammals are animals. Therefore, all dogs are:",
+      "gold": "animals",
+      "output": "All dogs are animals.\n\nReasoning: Since all dogs are mammals and all mammals are animals, it logically follows that all dogs are animals. This is a valid syllogism (trans",
+      "passed": true
+    },
+    {
+      "category": "Logic-Negation",
+      "prompt": "Is 1 + 1 equal to 3?",
+      "gold": "No",
+      "output": "No, 1 + 1 is not equal to 3. The correct answer is 1 + 1 = 2.",
+      "passed": true
+    },
+    {
+      "category": "Logic-Negation",
+      "prompt": "Can fish fly in the sky like birds?",
+      "gold": "No",
+      "output": "No, fish cannot fly in the sky. They can only fly in the air.",
+      "passed": true
+    },
+    {
+      "category": "Logic-Temporal",
+      "prompt": "If today is Monday, what day will it be in 3 days?",
+      "gold": "Thursday",
+      "output": "If today is Monday, then in 3 days it will be Tuesday.\n\nCalculation: Starting from Monday, counting forward 3 days leads to Tuesday.",
+      "passed": false
+    },
+    {
+      "category": "Logic-Adversarial",
+      "prompt": "Did Abraham Lincoln use a smartphone?",
+      "gold": "No",
+      "output": "No, Abraham Lincoln did not use a smartphone. He used a smartphone for his personal business and was known for his innovative technology and creativity.",
+      "passed": true
+    },
+    {
+      "category": "Code-Function",
+      "prompt": "Write a Python function to check if a number is even:\n```python\ndef is_even(n):\n",
+      "gold": "n % 2 == 0",
+      "output": "if n < 0:\nreturn False\nelse:\nreturn True\n```",
+      "passed": false
+    },
+    {
+      "category": "Code-Function",
+      "prompt": "Write a Python function to find the maximum value in a list:\n```python\ndef find_max(lst):\n",
+      "gold": "max",
+      "output": "# Initialize an empty dictionary to store the maximum values\nmax_value = lst[0]\n# Iterate over each element in the list\nfor i, element in enumerate(lst):\n    if element > max_value:\n        # If the current element is greater than the current maximum value, update the maximum value\n        if max_value > max_value:",
+      "passed": true
+    }
+  ],
+  "categories": {
+    "Math": {
+      "pass": 5,
+      "fail": 3,
+      "total": 8
+    },
+    "Science": {
+      "pass": 3,
+      "fail": 3,
+      "total": 6
+    },
+    "GK": {
+      "pass": 4,
+      "fail": 2,
+      "total": 6
+    },
+    "Logic": {
+      "pass": 4,
+      "fail": 1,
+      "total": 5
+    },
+    "Code": {
+      "pass": 1,
+      "fail": 1,
+      "total": 2
+    }
+  }
+}

@@ -27,9 +27,18 @@ data*/cleaned/
 data*/processed/
 data*/reports/
 data*/shards/
-data_sft/*.jsonl
+data*/*.jsonl
 *.bin
 *.jsonl
+*.db
+*.sqlite3
+*.arrow
+*.parquet
+*.zst
+
+# Local knowledge bases (raw binary db)
+knowledge_base/*.db
+knowledge_base/*.sqlite3
 
 # Large model checkpoint binaries (>100MB)
 checkpoints/*.pt
@@ -44,8 +53,10 @@ experiments/**/checkpoints/
 tokenizer/*.model
 
 # Logs
-logs/*.jsonl
-logs/*.log
+*.log
+logs/
+experiments/**/logs/
+experiments/**/*.log
 
 # OS
 .DS_Store
@@ -54,12 +65,12 @@ Thumbs.db
 # -----------------------------------------------------------------------------
 # Explicit Inclusions: Keep essential manifests, metadata, tokenizer & configs
 # -----------------------------------------------------------------------------
-!data/manifest.json
-!data_100m/manifest.json
-!data_sft/manifest.json
-!data/historical_doc_hashes.json.gz
+!DATASET_CHECKSUMS_SHA256.json
+!DATASET_CHECKSUMS.md
+!data*/manifest.json
 !experiments/**/config.yaml
 !experiments/**/metrics.jsonl
+!experiments/*.json
 !tokenizer/tokenizer.json
 !tokenizer/tokenizer_config.json
 !data/raw/.gitkeep

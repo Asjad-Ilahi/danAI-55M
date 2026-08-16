@@ -64,15 +64,33 @@ def set_rng_state(state: dict) -> None:
     Args:
         state: Dictionary of RNG states as returned by get_rng_state()
     """
-    if 'python' in state:
-        random.setstate(state['python'])
-    if 'numpy' in state:
-        np.random.set_state(state['numpy'])
-    if 'torch' in state:
-        torch_state = state['torch']
-        if isinstance(torch_state, torch.Tensor):
-            torch_state = torch_state.cpu()
-        torch.random.set_rng_state(torch_state)
-    if 'cuda' in state and torch.cuda.is_available():
-        torch.cuda.set_rng_state_all(state['cuda'])
+    if 'python' in state and state['python'] is not None:
+        try:
+            random.setstate(state['python'])
+        except Exception:
+            pass
+    if 'numpy' in state and state['numpy'] is not None:
+        try:
+            np.random.set_state(state['numpy'])
+        except Exception:
+            pass
+    if 'torch' in state and state['torch'] is not None:
+        try:
+            torch_state = state['torch']
+            if isinstance(torch_state, torch.Tensor):
+                torch_state = torch_state.cpu().to(torch.uint8)
+            torch.random.set_rng_state(torch_state)
+        except Exception:
+            pass
+    if 'cuda' in state and state['cuda'] is not None and torch.cuda.is_available():
+        try:
+            cuda_states = state['cuda']
+            if isinstance(cuda_states, (list, tuple)):
+                cuda_states = [s.cpu().to(torch.uint8) if isinstance(s, torch.Tensor) else s for s in cuda_states]
+            elif isinstance(cuda_states, torch.Tensor):
+                cuda_states = [cuda_states.cpu().to(torch.uint8)]
+            torch.cuda.set_rng_state_all(cuda_states)
+        except Exception:
+            pass
+
 

@@ -5,7 +5,15 @@ Loads trained model checkpoint (preferring EMA weights) and runs interactive or 
 """
 
 import argparse
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 import torch
 from tokenizers import Tokenizer
@@ -17,18 +25,21 @@ from src.evaluation.generation import TextGenerator
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate text using trained 75M SLM checkpoint")
+    parser = argparse.ArgumentParser(description="Generate text using trained 54.5M SLM checkpoint")
     parser.add_argument("--checkpoint", type=str, required=True, help="Path to model checkpoint (.pt)")
     parser.add_argument("--model-config", type=str, default="configs/model.yaml", help="Path to model config")
     parser.add_argument("--tokenizer-dir", type=str, default="tokenizer", help="Path to tokenizer directory")
-    parser.add_argument("--prompt", type=str, default="The future of artificial intelligence is", help="Prompt text")
-    parser.add_argument("--max-new-tokens", type=int, default=100, help="Max tokens to generate")
-    parser.add_argument("--temperature", type=float, default=0.7, help="Sampling temperature")
-    parser.add_argument("--top-k", type=int, default=40, help="Top-k sampling")
+    parser.add_argument("--prompt", type=str, default="What is 7 + 5?", help="Prompt text")
+    parser.add_argument("--max-new-tokens", type=int, default=120, help="Max tokens to generate")
+    parser.add_argument("--temperature", type=float, default=0.2, help="Sampling temperature (lower = more deterministic/factual)")
+    parser.add_argument("--top-k", type=int, default=20, help="Top-k sampling")
     parser.add_argument("--top-p", type=float, default=0.9, help="Top-p nucleus sampling")
-    parser.add_argument("--repetition-penalty", "--rep-penalty", type=float, default=1.0, help="Repetition penalty (1.0 = none, >1.0 penalizes repeats)")
+    parser.add_argument("--repetition-penalty", "--rep-penalty", type=float, default=1.15, help="Repetition penalty (>1.0 prevents repetition loops)")
     parser.add_argument("--no-cache", action="store_true", help="Disable KV cache")
     parser.add_argument("--disable-ema", "--no-ema", action="store_true", help="Disable EMA weights and use raw model weights for generation")
+    parser.add_argument("--chat", action="store_true", help="Force ChatML formatting (User: ... / Assistant:)")
+    parser.add_argument("--raw", action="store_true", help="Force raw document completion without chat template")
+    parser.add_argument("--interactive", "-i", action="store_true", help="Start interactive prompt loop")
     args = parser.parse_args()
 
     device = get_device()
@@ -58,7 +69,7 @@ def main():
             model.lm_head.weight = model.token_embedding.weight
     else:
         print("Using raw model weights for generation...")
-        model.load_state_dict(checkpoint["model_state_dict"], strict=False)
+        model.load_state_dict(checkpoint.get("model_state_dict", checkpoint), strict=False)
 
     model.eval()
 
@@ -69,21 +80,92 @@ def main():
     # Generator
     generator = TextGenerator(model, tokenizer, device)
 
-    print(f"\n--- PROMPT ---\n{args.prompt}\n")
-    print("--- GENERATING ---")
+    # Determine chat mode: auto-detect if SFT checkpoint
+    is_chat = not args.raw and (args.chat or "sft" in str(ckpt_path).lower())
 
-    output = generator.generate(
-        prompt=args.prompt,
-        max_new_tokens=args.max_new_tokens,
-        temperature=args.temperature,
-        top_k=args.top_k,
-        top_p=args.top_p,
-        repetition_penalty=args.repetition_penalty,
-        use_kv_cache=not args.no_cache,
-    )
+    if args.interactive:
+        print("\n" + "=" * 70)
+        print("  INTERACTIVE MODEL TESTING MODE")
+        print(f"  Mode: {'Chat Assistant (User: ... / Assistant:)' if is_chat else 'Raw Text Completion'}")
+        print("  - Type any question or coding task and press Enter")
+        print("  - Supports literal '\\n' for newlines")
+        print("  - Type 'exit', 'quit', or 'q' to stop")
+        print("=" * 70)
 
-    print(f"\n--- GENERATED TEXT ---\n{output}\n")
+        while True:
+            try:
+                raw_input = input("\nEnter Prompt > ").strip()
+                if not raw_input:
+                    continue
+                if raw_input.lower() in ("exit", "quit", "q"):
+                    print("Exiting interactive mode.")
+                    break
+
+                user_text = raw_input.replace("\\n", "\n")
+
+                if is_chat:
+                    if not user_text.startswith("User:") and "Assistant:" not in user_text:
+                        full_prompt = f"User: {user_text}\n\nAssistant:"
+                    else:
+                        full_prompt = user_text
+                else:
+                    full_prompt = user_text
+
+                print("\n--- GENERATING ---")
+                output = generator.generate(
+                    prompt=full_prompt,
+                    max_new_tokens=args.max_new_tokens,
+                    temperature=args.temperature,
+                    top_k=args.top_k,
+                    top_p=args.top_p,
+                    repetition_penalty=args.repetition_penalty,
+                    use_kv_cache=not args.no_cache,
+                )
+
+                if is_chat and full_prompt in output:
+                    reply = output[len(full_prompt):].strip()
+                    # Truncate if model hallucinates another User turn
+                    if "\nUser:" in reply:
+                        reply = reply.split("\nUser:")[0].strip()
+                else:
+                    reply = output
+
+                print(f"\n--- ASSISTANT REPLY ---\n{reply}\n")
+                print("-" * 70)
+            except (KeyboardInterrupt, EOFError):
+                print("\nExiting interactive mode.")
+                break
+    else:
+        user_text = args.prompt.replace("\\n", "\n")
+        if is_chat and not user_text.startswith("User:") and "Assistant:" not in user_text:
+            full_prompt = f"User: {user_text}\n\nAssistant:"
+        else:
+            full_prompt = user_text
+
+        print(f"\n--- PROMPT ---\n{full_prompt}\n")
+        print("--- GENERATING ---")
+
+        output = generator.generate(
+            prompt=full_prompt,
+            max_new_tokens=args.max_new_tokens,
+            temperature=args.temperature,
+            top_k=args.top_k,
+            top_p=args.top_p,
+            repetition_penalty=args.repetition_penalty,
+            use_kv_cache=not args.no_cache,
+        )
+
+        if is_chat and full_prompt in output:
+            reply = output[len(full_prompt):].strip()
+            if "\nUser:" in reply:
+                reply = reply.split("\nUser:")[0].strip()
+        else:
+            reply = output
+
+        print(f"\n--- ASSISTANT REPLY ---\n{reply}\n")
 
 
 if __name__ == "__main__":
     main()
+
+

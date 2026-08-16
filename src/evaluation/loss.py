@@ -18,10 +18,12 @@ def evaluate_validation_loss(
     batch_size: int = 1,
     max_eval_batches: int = 100,
     ema_model: Optional[Any] = None,
+    step: int = 0,
 ) -> Tuple[float, float]:
     """
     Compute average cross-entropy loss and perplexity on validation set.
-    Samples evenly across all domains in the validation set.
+    Dynamically rotates through fresh validation tokens at every validation step
+    so the model evaluates on unseen validation slices across the entire validation corpus.
     
     Returns: (val_loss, perplexity)
     """
@@ -33,9 +35,10 @@ def evaluate_validation_loss(
     num_samples = len(val_dataset)
     num_eval = min(max_eval_batches, num_samples)
     
-    # Evenly spaced indices to cover all domains (Math, Science, Wiki, Code, QA, Stories)
-    step_stride = max(1, num_samples // num_eval)
-    eval_indices = [i * step_stride for i in range(num_eval)]
+    # Dynamic rolling offset: advance by num_eval samples every validation interval
+    # This guarantees completely fresh, non-overlapping validation tokens per validation run
+    offset = (step * num_eval) % max(1, num_samples)
+    eval_indices = [(offset + i) % num_samples for i in range(num_eval)]
 
     total_loss = 0.0
     total_batches = 0

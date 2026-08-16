@@ -1,0 +1,48 @@
+# High-Density Knowledge-Injected SFT Configuration for 54.5M SLM
+# Factual alignment + Anchor preservation starting from exp_010_sft/best.pt
+
+training:
+  # SFT mode flags
+  is_sft: true
+  reset_optimizer: true
+  continuation_warmup_steps: 30
+
+  # Batch size
+  micro_batch_size: 4
+  gradient_accumulation_steps: 8       # Effective batch = 32 conversations per step
+  max_seq_len: 1024
+
+  # Epochs & Steps (1.5 epochs over 20,200 balanced examples -> 950 steps)
+  epochs: 2
+  max_steps: 950
+
+  # Learning Rate Schedule (Targeted Knowledge Injection LR)
+  schedule: cosine
+  learning_rate: 3.5e-5                # Knowledge burning LR
+  min_learning_rate: 1.0e-6            # Floor LR
+  warmup_ratio: 0.03                   # 3% warmup (~30 steps)
+
+  # Optimizer (AdamW)
+  weight_decay: 0.01
+  beta1: 0.9
+  beta2: 0.95
+  eps: 1.0e-8
+  grad_clip: 1.0
+
+  # Precision
+  precision: auto                      # auto: bf16 -> fp16 -> fp32
+
+  # Memory optimization
+  gradient_checkpointing: false
+
+  # EMA
+  ema_decay: 0.999
+
+  # Logging & Checkpointing
+  validation_interval: 100             # Validate every 100 steps
+  checkpoint_interval: 200             # Save checkpoint every 200 steps
+  log_interval: 1                      # Log every step
+
+  # Reproducibility
+  seed: 42
+  num_workers: 0

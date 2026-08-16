@@ -1,0 +1,49 @@
+# 3.0 Billion Token Continuation Training Configuration
+# Scales the 54.5M SLM from 237M tokens -> 3.237B tokens (98,785 total steps)
+# Optimized for NVIDIA GeForce RTX 4070 SUPER (12GB VRAM) at 64,602 tok/s throughput (~12.9 hours)
+
+training:
+  # Continuation mode flags
+  continuation: true
+  continuation_warmup_steps: 500       # Smooth warmup over ~16.4M tokens to absorb new data mixture
+  reset_optimizer: false               # Maintain AdamW momentum and variance from exp_008
+
+  # Batch size & Context
+  micro_batch_size: 4                  # Optimal GPU saturation (3.84 GB peak VRAM, zero PCIe paging)
+  gradient_accumulation_steps: 8       # Effective batch = 4 * 8 * 1024 = 32,768 tokens/step
+  max_seq_len: 1024                    # Full 1024 context window
+
+  # Token budget (236.98M existing + 2,750.11M new tokens = ~2,987.08M total tokens -> 91,158 total steps)
+  max_tokens: 2987083817
+
+  # Warmup-Stable-Decay (WSD) Learning Rate Schedule
+  schedule: wsd
+  learning_rate: 3.0e-4                # Peak learning rate for stable absorption
+  min_learning_rate: 1.0e-5            # Floor LR for final high-quality quality annealing
+  annealing_fraction: 0.08             # Final 8% of tokens (~245M tokens / ~7,500 steps) decay phase
+  warmup_ratio: 0.005                  # Warmup ratio
+
+  # Optimizer (AdamW)
+  weight_decay: 0.1
+  beta1: 0.9
+  beta2: 0.95
+  eps: 1.0e-8
+  grad_clip: 1.0                       # Max gradient norm clipping
+
+  # Precision & Memory Optimization
+  precision: auto                      # Native torch.bfloat16
+  gradient_checkpointing: false        # Kept false for maximum 64.6k tok/s compute throughput
+  ema_decay: 0.999                     # Exponential moving average for superior evaluation stability
+
+  # Logging & Checkpointing
+  validation_interval: 200             # Validate every 200 steps (~6.5M tokens / ~1.7 minutes)
+  max_eval_batches: 100                # Evaluates 100 fresh batches (~102,400 new tokens) per validation run via dynamic rolling window
+  checkpoint_interval: 3000            # Save checkpoint every 3,000 steps (~98.3M tokens / ~25.5 minutes)
+  log_interval: 1                      # Log metrics for EVERY step to TensorBoard & JSONL
+
+  # Reproducibility & Loader
+  seed: 42
+  num_workers: 0
+
+  # Document-aware packing
+  pack_with_document_mask: true        # Block-diagonal causal mask across document boundaries

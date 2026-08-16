@@ -22,7 +22,15 @@ import sys
 import time
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
+
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 import torch
 import yaml
@@ -30,6 +38,7 @@ from torch.utils.data import DataLoader
 from tokenizers import Tokenizer
 
 from src.data.sft_dataset import SFTDataset, sft_collate_fn
+
 from src.evaluation.generation import TextGenerator
 from src.model.gpt import CausalLM
 from src.model.ema import EMAModel
@@ -52,10 +61,16 @@ EVAL_PROMPTS = [
 def map_domain_name(raw_domain: str) -> str:
     """Normalize raw dataset domain keys to human-readable categories."""
     d = raw_domain.lower()
-    if "general_instruction" in d or "smol" in d:
+    if "science" in d:
+        return "Science & Facts"
+    elif "knowledge" in d or "gk" in d:
+        return "General Knowledge"
+    elif "logic" in d or "reason" in d:
+        return "Logic & Reasoning"
+    elif "general_instruction" in d or "smol" in d:
         return "Conversation (SmolTalk)"
     elif "instruction_following" in d or "tulu" in d:
-        return "Reasoning (Tulu 3)"
+        return "Instruction (Tulu 3)"
     elif "math" in d:
         return "Mathematics"
     elif "code" in d or "coding" in d:
@@ -63,6 +78,7 @@ def map_domain_name(raw_domain: str) -> str:
     elif "qa" in d or "everyday" in d or "orca" in d:
         return "General Q&A"
     return "General"
+
 
 
 def evaluate_full_validation(

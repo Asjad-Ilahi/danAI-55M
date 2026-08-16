@@ -12,15 +12,17 @@ training:
   gradient_accumulation_steps: 8       # Effective batch = 32 conversations per step
   max_seq_len: 1024                    # Maximum conversation context length
 
-  # Epochs & Steps (2 epochs over 10M tokens -> ~600 steps)
+  # Epochs & Steps (2 full epochs over 15M tokens -> 6,920 steps)
   epochs: 2
-  max_steps: 610
+  max_steps: 6920
 
   # Learning Rate Schedule (Cosine decay for SFT)
   schedule: cosine
   learning_rate: 2.5e-5                # Conservative SFT learning rate to preserve pretrained representations
   min_learning_rate: 1.0e-6            # Floor LR
-  warmup_ratio: 0.05                   # 5% warmup (~30 steps)
+  warmup_ratio: 0.03                   # 3% warmup (~200 steps)
+
+
 
   # Optimizer (AdamW)
   weight_decay: 0.01                   # Lower weight decay for SFT
@@ -39,10 +41,11 @@ training:
   ema_decay: 0.999
 
   # Logging & Checkpointing
-  validation_interval: 25              # Validate & run qualitative generation test every 25 steps
-  checkpoint_interval: 50              # Save checkpoint every 50 steps
+  validation_interval: 500              # Validate & run qualitative generation test every 50 steps
+  checkpoint_interval: 1000             # Save checkpoint every 100 steps
   log_interval: 1                      # Log every step
 
   # Reproducibility
   seed: 42
   num_workers: 0
+
