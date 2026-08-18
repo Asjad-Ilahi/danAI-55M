@@ -19,6 +19,7 @@ import json
 import math
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -39,7 +40,9 @@ from src.model.gpt import CausalLM
 from src.utils.config import Config
 from src.utils.device import get_device
 
-DEFAULT_CHECKPOINT = "experiments/exp_019_perfect_alignment/checkpoints/best.pt"
+HF_REPO_ID = "asjadilahi/danAI-55M-Reasoning"
+LOCAL_WEIGHTS_PATH = Path("weights/model.safetensors")
+LOCAL_TOKENIZER_PATH = Path("tokenizer/tokenizer.json")
 
 DEFAULT_SYSTEM_PROMPT = (
     "You are an intelligent AI assistant. You have access to the following tools:\n"
@@ -193,68 +196,81 @@ def dispatch_tool_call(tool_name: str, arguments: Dict[str, Any], raw_user_promp
 HF_REPO_ID = "asjadilahi/danAI-55M-Reasoning"
 
 
-def resolve_model_weights(checkpoint_path: str = DEFAULT_CHECKPOINT) -> Tuple[Dict[str, Any], bool, str]:
+def resolve_model_weights(model_path: Optional[str] = None) -> Tuple[Dict[str, Any], str]:
     """
-    Finds model weights locally or automatically downloads them from Hugging Face Hub.
-    Returns (state_dict, is_ema, source_description).
+    Finds model weights locally in weights/ or downloads from Hugging Face Hub on first launch.
+    Persists to weights/model.safetensors so subsequent launches load instantly from disk.
     """
-    p = Path(checkpoint_path)
-    if p.exists() and p.is_file():
-        ckpt = torch.load(p, map_location="cpu", weights_only=False)
-        if "ema_state_dict" in ckpt and "shadow" in ckpt["ema_state_dict"]:
-            return ckpt["ema_state_dict"]["shadow"], True, str(p)
-        elif "ema_weights" in ckpt:
-            return ckpt["ema_weights"], True, str(p)
-        elif "model_state_dict" in ckpt:
-            return ckpt["model_state_dict"], False, str(p)
-        return ckpt, False, str(p)
+    from safetensors.torch import load_file
 
-    safetensors_local = Path("hf_export/model.safetensors")
-    if safetensors_local.exists():
-        from safetensors.torch import load_file
-        state_dict = load_file(str(safetensors_local))
-        return state_dict, True, str(safetensors_local)
+    # 1. Custom path provided
+    if model_path:
+        p = Path(model_path)
+        if p.exists():
+            if p.suffix == ".safetensors":
+                return load_file(str(p)), str(p)
+            ckpt = torch.load(p, map_location="cpu", weights_only=False)
+            if "ema_state_dict" in ckpt and "shadow" in ckpt["ema_state_dict"]:
+                return ckpt["ema_state_dict"]["shadow"], str(p)
+            elif "model_state_dict" in ckpt:
+                return ckpt["model_state_dict"], str(p)
+            return ckpt, str(p)
 
-    # Auto-download from Hugging Face
-    print(f"\n[Hub] Local checkpoint not found at '{checkpoint_path}'.")
-    print(f"[Hub] Auto-downloading danAI-55M from Hugging Face ({HF_REPO_ID})...")
+    # 2. Check persistent local weights/ directory
+    if LOCAL_WEIGHTS_PATH.exists():
+        return load_file(str(LOCAL_WEIGHTS_PATH)), str(LOCAL_WEIGHTS_PATH)
+
+    # 3. Check hf_export/ directory
+    if Path("hf_export/model.safetensors").exists():
+        LOCAL_WEIGHTS_PATH.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy("hf_export/model.safetensors", LOCAL_WEIGHTS_PATH)
+        return load_file(str(LOCAL_WEIGHTS_PATH)), str(LOCAL_WEIGHTS_PATH)
+
+    # 4. First Launch: Download from Hugging Face Hub and cache in weights/
+    print(f"\n[Hub] First launch detected! Downloading danAI-55M weights from Hugging Face ({HF_REPO_ID})...")
     try:
         from huggingface_hub import hf_hub_download
-        from safetensors.torch import load_file
-        weights_file = hf_hub_download(
+        LOCAL_WEIGHTS_PATH.parent.mkdir(parents=True, exist_ok=True)
+        cached_file = hf_hub_download(
             repo_id=HF_REPO_ID,
             filename="model.safetensors",
         )
-        state_dict = load_file(weights_file)
-        print(f"[Hub] ✓ Downloaded model weights: {weights_file}\n")
-        return state_dict, True, f"HuggingFace ({HF_REPO_ID})"
+        # Copy to local weights/ directory for zero-latency future runs
+        shutil.copy(cached_file, LOCAL_WEIGHTS_PATH)
+        print(f"[Hub] ✓ Downloaded & saved to {LOCAL_WEIGHTS_PATH} (104 MB)\n")
+        return load_file(str(LOCAL_WEIGHTS_PATH)), str(LOCAL_WEIGHTS_PATH)
     except Exception as e:
         raise FileNotFoundError(
-            f"Could not load checkpoint '{checkpoint_path}' or download from Hugging Face ({HF_REPO_ID}): {e}"
+            f"Could not load weights from '{LOCAL_WEIGHTS_PATH}' or download from Hugging Face ({HF_REPO_ID}): {e}"
         )
 
 
-def resolve_tokenizer(tokenizer_dir: str = "tokenizer") -> Tokenizer:
-    """Loads tokenizer locally or downloads from Hugging Face Hub."""
-    t_file = Path(tokenizer_dir) / "tokenizer.json"
-    if t_file.exists():
-        return Tokenizer.from_file(str(t_file))
+def resolve_tokenizer(tokenizer_path: Optional[str] = None) -> Tokenizer:
+    """Loads tokenizer from tokenizer/tokenizer.json or downloads on first launch."""
+    if tokenizer_path and Path(tokenizer_path).exists():
+        return Tokenizer.from_file(tokenizer_path)
+
+    if LOCAL_TOKENIZER_PATH.exists():
+        return Tokenizer.from_file(str(LOCAL_TOKENIZER_PATH))
     
     if Path("hf_export/tokenizer.json").exists():
-        return Tokenizer.from_file("hf_export/tokenizer.json")
+        LOCAL_TOKENIZER_PATH.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy("hf_export/tokenizer.json", LOCAL_TOKENIZER_PATH)
+        return Tokenizer.from_file(str(LOCAL_TOKENIZER_PATH))
         
-    print(f"[Hub] Auto-downloading tokenizer from Hugging Face ({HF_REPO_ID})...")
+    print(f"[Hub] Downloading tokenizer from Hugging Face ({HF_REPO_ID})...")
     from huggingface_hub import hf_hub_download
+    LOCAL_TOKENIZER_PATH.parent.mkdir(parents=True, exist_ok=True)
     tok_file = hf_hub_download(repo_id=HF_REPO_ID, filename="tokenizer.json")
-    return Tokenizer.from_file(tok_file)
+    shutil.copy(tok_file, LOCAL_TOKENIZER_PATH)
+    return Tokenizer.from_file(str(LOCAL_TOKENIZER_PATH))
 
 
 def load_model(
-    checkpoint_path: str = DEFAULT_CHECKPOINT,
+    model_path: Optional[str] = None,
     model_config_path: str = "configs/model.yaml",
-    use_ema: bool = True,
     device: str = "cpu",
-) -> Tuple[CausalLM, Config, str, bool]:
+) -> Tuple[CausalLM, Config, str]:
     cfg = Config.from_yaml(model_config_path) if Path(model_config_path).exists() else Config({
         "model": {
             "vocab_size": 32768,
@@ -272,7 +288,7 @@ def load_model(
     })
     
     model = CausalLM(cfg.model)
-    state_dict, loaded_ema, source_desc = resolve_model_weights(checkpoint_path)
+    state_dict, source_desc = resolve_model_weights(model_path)
 
     # Clean state dict keys
     cleaned = {}
@@ -291,7 +307,7 @@ def load_model(
             
     model.to(device)
     model.eval()
-    return model, cfg, source_desc, loaded_ema
+    return model, cfg, source_desc
 
 
 def stream_generate(
@@ -487,23 +503,22 @@ def stream_generate(
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="Interactive Prompt Engine for danAI-55M")
-    parser.add_argument("--checkpoint", type=str, default=DEFAULT_CHECKPOINT, help="Checkpoint path (or auto-downloads from HF)")
-    parser.add_argument("--tokenizer-dir", type=str, default="tokenizer", help="Tokenizer path")
+    parser.add_argument("--model", type=str, default=None, help="Custom weights path (defaults to weights/ or auto-downloads from HF)")
+    parser.add_argument("--tokenizer", type=str, default=None, help="Custom tokenizer path")
     parser.add_argument("--temperature", "--temp", type=float, default=0.1, help="Temperature (0 for greedy, 0.1 default)")
     parser.add_argument("--repetition-penalty", "--penalty", type=float, default=1.15, help="Repetition penalty")
     parser.add_argument("--max-new-tokens", "--tokens", type=int, default=300, help="Max tokens per response")
     args = parser.parse_args()
 
     device = get_device()
-    tokenizer = resolve_tokenizer(args.tokenizer_dir)
+    tokenizer = resolve_tokenizer(args.tokenizer)
 
     print("\n" + "=" * 80)
     print("       🧠 danAI-55M-Reasoning INTERACTIVE ENGINE (with Agentic Tools)")
     print("=" * 80)
     
-    model, config, source_desc, active_ema = load_model(
-        checkpoint_path=args.checkpoint,
-        use_ema=True,
+    model, config, source_desc = load_model(
+        model_path=args.model,
         device=device,
     )
     print(f"  • Model Source: {source_desc}")

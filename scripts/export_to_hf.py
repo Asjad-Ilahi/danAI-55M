@@ -197,7 +197,7 @@ Named after the Urdu word ***Dānā (دانا)*** meaning *wise* or *intelligent
 
 ---
 
-## 💎 Core Strengths & Selling Points
+## 💎 Core Strengths
 
 1. **⚡ Ultra-Low 104 MB RAM Footprint**:
    * Runs smoothly on mobile chips, Apple Silicon, Raspberry Pi, and microcontrollers without requiring aggressive quantization.
