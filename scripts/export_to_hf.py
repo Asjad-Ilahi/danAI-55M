@@ -209,14 +209,14 @@ Named after the Urdu word ***Dānā (دانا)*** meaning *wise* or *intelligent
 
 Evaluated across **100% of all official test and validation samples** (>20,000+ test questions) against all major sub-150M open models:
 
-| Model | Active Params | Training Scale | ARC-Challenge *(Hard Science)* | ARC-Easy *(2,376 q)* | ARC (Avg) | MMLU *(1,520 q)* | GSM8K (Direct) | Agentic Tools | RAM Footprint | PIQA *(1,838 q)* |
+| Model | Active Params | Training Scale | GSM8K (Direct) | Agentic Tools | ARC-Challenge *(Hard Science)* | ARC-Easy *(2,376 q)* | ARC (Avg) | MMLU *(1,520 q)* | RAM Footprint | PIQA *(1,838 q)* |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **danAI-55M-Reasoning** | **54.5M** 🏆 | **~3B tokens** | **25.2%** 🏆 | **39.2%** 🏆 | **32.2%** 🏆 | **27.4%** 🏆 | **3.0%** 🏆 | **100.0% (Native)** 🏆 | **104 MB** 🏆 | **56.1%** |
-| **Pythia-70M** *(EleutherAI)* | 70M | 300B tokens | 18.1% | 37.4% | 27.8% | 25.1% | 0.0% | 0.0% | 140 MB | 59.5% |
-| **GPT-2 Small** *(OpenAI)* | 124M | 40B tokens | 21.4% | 35.8% | 28.6% | 26.2% | 0.0% | 0.0% | 248 MB | 63.3% |
-| **MobileLLM-125M** *(Meta AI)* | 125M | 1,000B tokens | 27.7% | 45.5% | 36.6% | - | 0.5% | 0.0% | 250 MB | 64.6% |
-| **SmolLM-135M** *(Hugging Face)* | 135M | 600B tokens | - | - | 42.4% | 30.2% | 1.0% | 0.0% | 270 MB | 68.4% |
-| **SmolLM2-135M** *(Hugging Face)* | 135M | 2,000B tokens | - | - | 43.9% | 31.5% | 1.4% | 0.0% | 270 MB | 68.4% |
+| **danAI-55M-Reasoning** | **54.5M** | **~3B tokens** | **3.0%** | **100.0% (Native)** | **25.2%** | **39.2%** | **32.2%** | **27.4%** | **104 MB** | **56.1%** |
+| **Pythia-70M** *(EleutherAI)* | 70M | 300B tokens | 0.0% | 0.0% | 18.1% | 37.4% | 27.8% | 25.1% | 140 MB | 59.5% |
+| **GPT-2 Small** *(OpenAI)* | 124M | 40B tokens | 0.0% | 0.0% | 21.4% | 35.8% | 28.6% | 26.2% | 248 MB | 63.3% |
+| **MobileLLM-125M** *(Meta AI)* | 125M | 1,000B tokens | 0.5% | 0.0% | 27.7% | 45.5% | 36.6% | - | 250 MB | 64.6% |
+| **SmolLM-135M** *(Hugging Face)* | 135M | 600B tokens | 1.0% | 0.0% | - | - | 42.4% | 30.2% | 270 MB | 68.4% |
+| **SmolLM2-135M** *(Hugging Face)* | 135M | 2,000B tokens | 1.4% | 0.0% | - | - | 43.9% | 31.5% | 270 MB | 68.4% |
 
 *Note: Benchmarks reflect official published numbers from literature and model cards. "-" indicates metrics not explicitly published by the authors.*
 
