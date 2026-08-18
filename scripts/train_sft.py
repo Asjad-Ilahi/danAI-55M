@@ -50,34 +50,41 @@ from src.utils.device import get_device
 
 # Standard qualitative benchmark prompts
 EVAL_PROMPTS = [
-    "User: What is 1 + 1?\n\nAssistant:",
-    "User: What is 100 + 500?\n\nAssistant:",
-    "User: Calculate 17 + 24.\n\nAssistant:",
-    "User: Write a Python function to check if a number is even.\n\nAssistant:",
+    "User: Hello! How are you?\n\nAssistant:",
+    "User: What is the capital of Pakistan?\n\nAssistant:",
     "User: What is photosynthesis?\n\nAssistant:",
+    "User: I have 4 mangoes and I give away 2. How many mangoes do I have left?\n\nAssistant:",
+    "System: You are an intelligent AI assistant. You have access to the following tools:\n- calculator(expression: str): Evaluates mathematical and arithmetic expressions with exact precision.\n- search_web(query: str): Searches the web for recent, real-time, or external information.\n- run_python(code: str): Executes Python code in a secure sandbox and returns the stdout output.\nAlways think carefully step-by-step inside a <think> block first. When a tool is needed, respond with a <tool_call> block containing a JSON object with 'name' and 'arguments'.\n\nUser: What is 48291 * 7182?\n\nAssistant:",
+    "System: You are an intelligent AI assistant. You have access to the following tools:\n- calculator(expression: str): Evaluates mathematical and arithmetic expressions with exact precision.\n- search_web(query: str): Searches the web for recent, real-time, or external information.\n- run_python(code: str): Executes Python code in a secure sandbox and returns the stdout output.\nAlways think carefully step-by-step inside a <think> block first. When a tool is needed, respond with a <tool_call> block containing a JSON object with 'name' and 'arguments'.\n\nUser: Search the web for NASA's Artemis II mission.\n\nAssistant:",
+    "User: Write a Python function `reverse_string(s)`.\n\nAssistant:",
 ]
 
 
 def map_domain_name(raw_domain: str) -> str:
     """Normalize raw dataset domain keys to human-readable categories."""
     d = raw_domain.lower()
-    if "science" in d:
-        return "Science & Facts"
-    elif "knowledge" in d or "gk" in d:
-        return "General Knowledge"
+    if "calculator" in d:
+        return "Agentic: Calculator"
+    elif "web search" in d or "search" in d:
+        return "Agentic: Web Search"
+    elif "python" in d or "sandbox" in d:
+        return "Agentic: Python Sandbox"
+    elif "error" in d or "recovery" in d:
+        return "Agentic: Error Recovery"
+    elif "prompt engineering" in d or "system" in d:
+        return "Prompt Engineering (System Prompts)"
+    elif "rag" in d or "context" in d:
+        return "RAG (Context-Grounded QA)"
     elif "logic" in d or "reason" in d:
         return "Logic & Reasoning"
-    elif "general_instruction" in d or "smol" in d:
-        return "Conversation (SmolTalk)"
-    elif "instruction_following" in d or "tulu" in d:
-        return "Instruction (Tulu 3)"
-    elif "math" in d:
+    elif "math" in d or "arithmetic" in d:
         return "Mathematics"
-    elif "code" in d or "coding" in d:
+    elif "coding" in d or "code" in d:
         return "Coding"
-    elif "qa" in d or "everyday" in d or "orca" in d:
-        return "General Q&A"
-    return "General"
+    elif "conversation" in d or "smol" in d:
+        return "Conversation"
+    else:
+        return "General Knowledge & Instructions"
 
 
 
@@ -187,7 +194,7 @@ def train_sft(
         batch_size=sft_cfg["micro_batch_size"],
         shuffle=True,
         collate_fn=lambda b: sft_collate_fn(b, pad_token_id=pad_id),
-        num_workers=0,
+        num_workers=sft_cfg.get("num_workers", 0),
         pin_memory=True if device.type == "cuda" else False,
     )
 
@@ -196,13 +203,13 @@ def train_sft(
         batch_size=sft_cfg["micro_batch_size"],
         shuffle=False,
         collate_fn=lambda b: sft_collate_fn(b, pad_token_id=pad_id),
-        num_workers=0,
+        num_workers=sft_cfg.get("num_workers", 0),
     )
 
     grad_accum_steps = sft_cfg["gradient_accumulation_steps"]
     effective_batch_examples = sft_cfg["micro_batch_size"] * grad_accum_steps
     steps_per_epoch = len(train_dataset) // effective_batch_examples
-    total_steps = sft_cfg.get("max_steps", steps_per_epoch * sft_cfg.get("epochs", 2))
+    total_steps = sft_cfg.get("max_steps") or (steps_per_epoch * sft_cfg.get("epochs", 2))
 
     # STARTUP REPORTING (Requirement #6)
     print("\n" + "-" * 80)
@@ -312,6 +319,9 @@ def train_sft(
         ema.update(model)
         step += 1
 
+        if device.type == "mps" and step % 250 == 0:
+            torch.mps.empty_cache()
+
         current_epoch = round(processed_examples / len(train_dataset), 2)
 
         # Step Progress Logging (Requirement #6)
@@ -361,13 +371,15 @@ def train_sft(
             for p in EVAL_PROMPTS:
                 out_txt = generator.generate(
                     prompt=p,
-                    max_new_tokens=40,
+                    max_new_tokens=120,
                     temperature=0.1,
-                    top_k=10,
+                    top_k=20,
+                    top_p=0.9,
+                    repetition_penalty=1.0,
+                    use_kv_cache=True,
                 )
-                clean_ans = out_txt.replace("\n", " ")
                 print(f"  [PROMPT]: {p}")
-                print(f"  [ANSWER]: {clean_ans}\n")
+                print(f"  [ANSWER]:\n{out_txt}\n")
             print("-------------------------------------------\n")
 
             # Save checkpoints

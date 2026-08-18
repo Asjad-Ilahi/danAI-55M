@@ -1,0 +1,52 @@
+# Targeted SFT Alignment Config for exp_019_perfect_alignment
+# Fine-tunes directly on top of experiments/exp_018_fused_slm/checkpoints/best.pt
+#
+# DESIGN & ANTI-OVERFITTING SAFETY:
+# - EXACTLY 1 EPOCH (~200 steps total)
+# - Ultra-Gentle LR: 3.0e-5 with cosine decay (preserves all fused weights)
+# - EMA tracking (0.995) for weight stabilization
+# - Strict prompt loss masking (User/System tokens masked out)
+
+training:
+  is_sft: true
+  reset_optimizer: true
+  continuation_warmup_steps: 15
+
+  # Batch size (Effective batch = 4 * 4 = 16 sequences per step)
+  micro_batch_size: 4
+  gradient_accumulation_steps: 4
+  max_seq_len: 512
+
+  # EXACTLY 1 EPOCH (~201 steps)
+  epochs: 1
+
+  # Learning Rate Schedule
+  schedule: cosine
+  learning_rate: 3.0e-5
+  min_learning_rate: 1.0e-6
+  warmup_ratio: 0.08
+
+  # Optimizer (AdamW)
+  weight_decay: 0.01
+  beta1: 0.9
+  beta2: 0.95
+  eps: 1.0e-8
+  grad_clip: 1.0
+
+  # Precision
+  precision: auto
+
+  # Memory optimization
+  gradient_checkpointing: false
+
+  # EMA
+  ema_decay: 0.995
+
+  # Logging & Checkpointing
+  validation_interval: 40
+  checkpoint_interval: 40
+  log_interval: 5
+
+  # Reproducibility
+  seed: 42
+  num_workers: 0

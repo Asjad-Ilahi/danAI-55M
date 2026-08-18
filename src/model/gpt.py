@@ -52,6 +52,18 @@ class CausalLM(nn.Module):
         # Token embedding (no positional — RoPE in attention)
         self.token_embedding = TokenEmbedding(mc.vocab_size, mc.hidden_size)
         
+        # Context scaling configuration
+        rope_scaling = mc.get('rope_scaling', {})
+        if isinstance(rope_scaling, dict) and rope_scaling:
+            self.scaling_factor = float(rope_scaling.get('factor', 1.0))
+            self.scaling_type = str(rope_scaling.get('type', 'ntk'))
+        elif self.max_seq_len > 1024:
+            self.scaling_factor = float(self.max_seq_len / 1024.0)
+            self.scaling_type = "ntk"
+        else:
+            self.scaling_factor = 1.0
+            self.scaling_type = "none"
+
         # Transformer blocks
         self.layers = nn.ModuleList([
             TransformerBlock(
@@ -61,6 +73,8 @@ class CausalLM(nn.Module):
                 intermediate_size=intermediate_size,
                 max_seq_len=mc.max_seq_len,
                 rope_theta=mc.get('rope_theta', 10000.0),
+                scaling_factor=self.scaling_factor,
+                scaling_type=self.scaling_type,
                 rms_norm_eps=mc.get('rms_norm_eps', 1e-5),
                 dropout=mc.get('dropout', 0.0),
                 attention_dropout=mc.get('attention_dropout', 0.0),

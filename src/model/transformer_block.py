@@ -46,6 +46,8 @@ class TransformerBlock(nn.Module):
         intermediate_size: int,
         max_seq_len: int = 1024,
         rope_theta: float = 10000.0,
+        scaling_factor: float = 1.0,
+        scaling_type: str = "ntk",
         rms_norm_eps: float = 1e-5,
         dropout: float = 0.0,
         attention_dropout: float = 0.0,
@@ -63,6 +65,8 @@ class TransformerBlock(nn.Module):
             num_kv_heads=num_kv_heads,
             max_seq_len=max_seq_len,
             rope_theta=rope_theta,
+            scaling_factor=scaling_factor,
+            scaling_type=scaling_type,
             attention_dropout=attention_dropout,
             bias=bias,
         )

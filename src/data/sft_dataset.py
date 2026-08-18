@@ -2,9 +2,9 @@
 SFT Dataset Module for Supervised Fine-Tuning with Response-Only Loss Masking.
 
 Features:
-- Standard OpenAI/HuggingFace multi-turn JSONL conversation parser.
-- Intelligent sequence truncation preserving the latest complete user/assistant turn.
-- Response-only loss masking: all System/User prompt tokens have target ID = -100.
+- Standard multi-turn JSONL conversation parser with full System, User, Tool, and Assistant role support.
+- Response-only loss masking: all System/User/Tool inputs have target ID = -100 (loss only on Assistant output).
+- Intelligent sequence truncation preserving the latest complete turns.
 - Per-sample domain tracking for stratified multi-domain validation loss reporting.
 - Dynamic batch padding with attention masking for high throughput.
 """
@@ -21,7 +21,7 @@ from tokenizers import Tokenizer
 class SFTDataset(Dataset):
     """
     Supervised Fine-Tuning dataset with response-only loss masking and
-    intelligent turn-aware truncation.
+    intelligent turn-aware truncation supporting System, User, Tool, and Assistant roles.
     """
     
     def __init__(
@@ -69,59 +69,70 @@ class SFTDataset(Dataset):
         messages = sample["messages"]
         domain = sample.get("provenance", {}).get("domain", "general")
         
-        # 1. Parse into structured user-assistant pairs
-        pairs: List[Tuple[str, str]] = []
-        current_user = None
-        for msg in messages:
+        # Parse conversation with system prompt and turn structure
+        # Segment format: (prompt_tokens, response_tokens)
+        full_input_ids: List[int] = []
+        full_target_ids: List[int] = []
+        
+        system_prefix = ""
+        msg_idx = 0
+        if messages and messages[0].get("role", "").strip().lower() == "system":
+            sys_content = messages[0].get("content", "").strip()
+            if sys_content:
+                system_prefix = f"System: {sys_content}\n\n"
+                s_ids = self.tokenizer.encode(system_prefix).ids
+                full_input_ids.extend(s_ids)
+                full_target_ids.extend([-100] * len(s_ids))
+            msg_idx = 1
+        
+        while msg_idx < len(messages):
+            msg = messages[msg_idx]
             role = msg.get("role", "").strip().lower()
             content = msg.get("content", "").strip()
-            if role in ["user", "system"]:
-                current_user = content
-            elif role == "assistant" and current_user is not None:
-                pairs.append((current_user, content))
-                current_user = None
-
-        if not pairs:
-            # Fallback if roles were irregular
-            first_user = messages[0].get("content", "")
-            first_asst = messages[1].get("content", "")
-            pairs = [(first_user, first_asst)]
-
-        # 2. Encode pairs from newest to oldest (Intelligent Truncation)
-        encoded_pairs = []
-        for u, a in reversed(pairs):
-            u_enc = self.tokenizer.encode(f"User: {u}\n\nAssistant: ").ids
-            a_enc = self.tokenizer.encode(f"{a}").ids + [self.eos_id]
-            encoded_pairs.append((u_enc, a_enc))
-
-        final_input_ids: List[int] = []
-        final_target_ids: List[int] = []
-
-        for u_enc, a_enc in encoded_pairs:
-            pair_len = len(u_enc) + len(a_enc)
-            if len(final_input_ids) + pair_len <= self.max_seq_len:
-                # Prepend older complete turn before newer turn
-                final_input_ids = u_enc + a_enc + final_input_ids
-                final_target_ids = ([-100] * len(u_enc)) + a_enc + final_target_ids
+            
+            if role == "user":
+                user_header = f"User: {content}\n\nAssistant: "
+                h_ids = self.tokenizer.encode(user_header).ids
+                full_input_ids.extend(h_ids)
+                full_target_ids.extend([-100] * len(h_ids))
+                msg_idx += 1
+            elif role in ["tool", "tool_response"]:
+                tool_block = f"\n\n<tool_response>\n{content}\n</tool_response>\n\nAssistant: "
+                t_ids = self.tokenizer.encode(tool_block).ids
+                full_input_ids.extend(t_ids)
+                full_target_ids.extend([-100] * len(t_ids))
+                msg_idx += 1
+            elif role == "assistant":
+                is_last = (msg_idx == len(messages) - 1)
+                asst_ids = self.tokenizer.encode(content).ids
+                if is_last or "<tool_call>" not in content:
+                    asst_ids = asst_ids + [self.eos_id]
+                full_input_ids.extend(asst_ids)
+                full_target_ids.extend(asst_ids)
+                msg_idx += 1
             else:
-                # If no pair fits yet (the latest single turn alone exceeds max_seq_len)
-                if not final_input_ids:
-                    avail_for_user = self.max_seq_len - len(a_enc)
-                    if avail_for_user >= 20:
-                        u_enc_trunc = u_enc[:avail_for_user]
-                        final_input_ids = u_enc_trunc + a_enc
-                        final_target_ids = ([-100] * len(u_enc_trunc)) + a_enc
-                    else:
-                        avail_for_asst = max(10, self.max_seq_len - len(u_enc) - 1)
-                        a_enc_trunc = a_enc[:avail_for_asst] + [self.eos_id]
-                        final_input_ids = u_enc + a_enc_trunc
-                        final_target_ids = ([-100] * len(u_enc)) + a_enc_trunc
-                break
+                extra_ids = self.tokenizer.encode(f"{content}\n\n").ids
+                full_input_ids.extend(extra_ids)
+                full_target_ids.extend([-100] * len(extra_ids))
+                msg_idx += 1
 
-        # Prepare causal LM shifted x and y
-        # x: input_ids[:-1], y: target_ids[1:]
-        x = torch.tensor(final_input_ids[:-1], dtype=torch.long)
-        y = torch.tensor(final_target_ids[1:], dtype=torch.long)
+        # Fallback if empty
+        if not full_input_ids:
+            u = messages[0].get("content", "") if messages else "Hello"
+            a = messages[1].get("content", "") if len(messages) > 1 else "Hello!"
+            u_ids = self.tokenizer.encode(f"User: {u}\n\nAssistant: ").ids
+            a_ids = self.tokenizer.encode(a).ids + [self.eos_id]
+            full_input_ids = u_ids + a_ids
+            full_target_ids = ([-100] * len(u_ids)) + a_ids
+
+        # Truncate if exceeds max_seq_len (keep within bounds)
+        if len(full_input_ids) > self.max_seq_len:
+            full_input_ids = full_input_ids[:self.max_seq_len]
+            full_target_ids = full_target_ids[:self.max_seq_len]
+
+        # Causal LM shifted input (x) and target (y)
+        x = torch.tensor(full_input_ids[:-1], dtype=torch.long)
+        y = torch.tensor(full_target_ids[1:], dtype=torch.long)
 
         return {
             "x": x,
@@ -150,18 +161,18 @@ def sft_collate_fn(batch: List[Dict[str, Any]], pad_token_id: int = 0) -> Dict[s
         pad_len = max_len - seq_len
         
         if pad_len > 0:
-            padded_x = torch.cat([x, torch.full((pad_len,), pad_token_id, dtype=torch.long)])
-            padded_y = torch.cat([y, torch.full((pad_len,), -100, dtype=torch.long)])
+            x_padded = torch.cat([x, torch.full((pad_len,), pad_token_id, dtype=torch.long)])
+            y_padded = torch.cat([y, torch.full((pad_len,), -100, dtype=torch.long)])
             mask = torch.cat([torch.ones(seq_len, dtype=torch.bool), torch.zeros(pad_len, dtype=torch.bool)])
         else:
-            padded_x = x
-            padded_y = y
+            x_padded = x
+            y_padded = y
             mask = torch.ones(seq_len, dtype=torch.bool)
-        
-        batch_x.append(padded_x)
-        batch_y.append(padded_y)
+            
+        batch_x.append(x_padded)
+        batch_y.append(y_padded)
         attn_masks.append(mask)
-    
+        
     return {
         "x": torch.stack(batch_x, dim=0),
         "y": torch.stack(batch_y, dim=0),

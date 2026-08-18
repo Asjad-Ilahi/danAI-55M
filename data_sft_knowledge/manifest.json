@@ -1,9 +1,0 @@
-{
-  "dataset_name": "Knowledge Injected SFT Mixture for 54.5M SLM",
-  "total_examples": 21263,
-  "total_tokens": 2417096,
-  "train_examples": 20200,
-  "train_tokens": 2295605,
-  "val_examples": 1063,
-  "val_tokens": 121491
-}

@@ -53,6 +53,8 @@ class GroupedQueryAttention(nn.Module):
         num_kv_heads: int,
         max_seq_len: int = 1024,
         rope_theta: float = 10000.0,
+        scaling_factor: float = 1.0,
+        scaling_type: str = "ntk",
         attention_dropout: float = 0.0,
         bias: bool = False,
     ):
@@ -81,11 +83,13 @@ class GroupedQueryAttention(nn.Module):
         # Output projection: hidden_size → hidden_size
         self.o_proj = nn.Linear(num_query_heads * self.head_dim, hidden_size, bias=bias)
         
-        # RoPE
+        # RoPE with NTK-Aware context scaling
         self.rotary_emb = RotaryEmbedding(
             head_dim=self.head_dim,
             max_seq_len=max_seq_len,
             theta=rope_theta,
+            scaling_factor=scaling_factor,
+            scaling_type=scaling_type,
         )
         
         # Check if SDPA is available

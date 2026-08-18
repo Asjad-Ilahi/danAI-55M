@@ -1,9 +1,0 @@
-{
-  "dataset_name": "Final Balanced SFT Mixture for 54.5M SLM",
-  "total_examples": 20502,
-  "total_tokens": 2166598,
-  "train_examples": 19477,
-  "train_tokens": 2056927,
-  "val_examples": 1025,
-  "val_tokens": 109671
-}

@@ -1,9 +1,0 @@
-{
-  "dataset_name": "SFT Stage 2 Targeted Knowledge & CoT Polish Dataset",
-  "total_examples": 5264,
-  "total_tokens": 460225,
-  "train_examples": 5001,
-  "train_tokens": 438410,
-  "val_examples": 263,
-  "val_tokens": 21815
-}

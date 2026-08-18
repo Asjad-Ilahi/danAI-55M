@@ -1,4 +1,4 @@
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -9,25 +9,24 @@ build/
 eggs/
 *.egg
 
-# Virtual environment
+# Virtual environments
 venv/
 .venv/
 env/
 
-# IDE
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.DS_Store
 
-# Large raw & binary data files
-data*/raw/
-data*/cleaned/
-data*/processed/
-data*/reports/
-data*/shards/
-data*/*.jsonl
+# Data & Datasets
+data/
+data*/
+dataset/
+dataset*/
 *.bin
 *.jsonl
 *.db
@@ -35,50 +34,19 @@ data*/*.jsonl
 *.arrow
 *.parquet
 *.zst
-
-# Local knowledge bases (raw binary db)
-knowledge_base/*.db
-knowledge_base/*.sqlite3
-
-# Large model checkpoint binaries (>100MB)
-checkpoints/*.pt
-experiments/**/*.pt
-experiments/**/checkpoints/
-*.zip
+*.gz
 *.tar
-*.tar.gz
+*.zip
 *.7z
 
-# Tokenizer artifacts (trained, potentially large)
-tokenizer/*.model
+# Checkpoints & Weights
+checkpoints/
+experiments/
+hf_export/
+*.pt
+*.safetensors
 
-# Logs
+# Logs & Temporary Scratch
 *.log
 logs/
-experiments/**/logs/
-experiments/**/*.log
-
-# OS
-.DS_Store
-Thumbs.db
-
-# -----------------------------------------------------------------------------
-# Explicit Inclusions: Keep essential manifests, metadata, tokenizer & configs
-# -----------------------------------------------------------------------------
-!DATASET_CHECKSUMS_SHA256.json
-!DATASET_CHECKSUMS.md
-!data*/manifest.json
-!experiments/**/config.yaml
-!experiments/**/metrics.jsonl
-!experiments/*.json
-!tokenizer/tokenizer.json
-!tokenizer/tokenizer_config.json
-!data/raw/.gitkeep
-!data/cleaned/.gitkeep
-!data/processed/train/.gitkeep
-!data/processed/validation/.gitkeep
-!data/reports/.gitkeep
-!checkpoints/.gitkeep
-!logs/.gitkeep
-!experiments/.gitkeep
-!tokenizer/.gitkeep
+scratch/

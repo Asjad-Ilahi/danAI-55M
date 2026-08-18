@@ -5,7 +5,10 @@
 
 model:
   vocab_size: 32768           # 32K vocab size per prompt §18
-  max_seq_len: 1024           # Context length (supports 512/1024/2048)
+  max_seq_len: 2048           # Extended context length (2,048 tokens / ~1,500 words)
+  rope_scaling:
+    type: "ntk"               # Zero-training NTK-Aware RoPE scaling
+    factor: 2.0               # 2x context extension
   hidden_size: 512            # Embedding / residual stream dimension
   num_layers: 12              # 12 layers → 54.5M parameters (68% faster training speed)
   num_query_heads: 8          # head_dim = 512/8 = 64
