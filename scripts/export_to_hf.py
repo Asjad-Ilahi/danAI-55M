@@ -267,20 +267,39 @@ The model was trained in a **hybrid multi-stage curriculum** spanning roughly **
 
 ## 🚀 Quickstart & Inference
 
+### 1. Interactive Terminal Chat & Tool Runner (Auto-downloads weights)
+```bash
+# Clone repository
+git clone https://github.com/Asjad-Ilahi/danAI-55M.git
+cd danAI-55M
+
+# Install dependencies
+pip install torch safetensors huggingface-hub tokenizers
+
+# Run interactive assistant (automatically pulls weights from Hugging Face)
+python scripts/chat.py
+```
+
+### 2. Standalone Python Inference
 ```python
 import torch
 from tokenizers import Tokenizer
 from safetensors.torch import load_file
+from huggingface_hub import hf_hub_download
 from src.model.gpt import CausalLM
 from src.utils.config import Config
 
 device = "mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu"
 
-tokenizer = Tokenizer.from_file("tokenizer.json")
-config = Config.from_yaml("config.json")
+# Download / load weights and tokenizer directly from Hugging Face
+weights_path = hf_hub_download(repo_id="asjadilahi/danAI-55M-Reasoning", filename="model.safetensors")
+tok_path = hf_hub_download(repo_id="asjadilahi/danAI-55M-Reasoning", filename="tokenizer.json")
+
+tokenizer = Tokenizer.from_file(tok_path)
+config = Config.from_yaml("configs/model.yaml")
 model = CausalLM(config.model)
 
-weights = load_file("model.safetensors")
+weights = load_file(weights_path)
 model.load_state_dict(weights, strict=False)
 model.to(device).eval()
 
@@ -290,6 +309,13 @@ input_ids = torch.tensor([tokenizer.encode(prompt).ids], dtype=torch.long, devic
 with torch.no_grad():
     output = model(input_ids)
 ```
+
+---
+
+## 🔗 Official Links & Resources
+
+* **GitHub Repository**: [https://github.com/Asjad-Ilahi/danAI-55M](https://github.com/Asjad-Ilahi/danAI-55M)
+* **Hugging Face Hub**: [https://huggingface.co/asjadilahi/danAI-55M-Reasoning](https://huggingface.co/asjadilahi/danAI-55M-Reasoning)
 
 ---
 

@@ -100,12 +100,16 @@ The model was trained in a **hybrid multi-stage curriculum** spanning roughly **
 
 ## 🚀 Quickstart & Inference
 
-### 1. Interactive Chat & Tool Runner
+### 1. Clone & Run (Auto-downloads weights from Hugging Face)
 ```bash
+git clone https://github.com/Asjad-Ilahi/danAI-55M.git
+cd danAI-55M
+
+# Run interactive assistant (pulls 104MB weights directly from Hugging Face if not present locally)
 python scripts/chat.py
 ```
 
-### 2. Python Inference Pipeline
+### 2. Standalone Python Inference
 ```python
 import torch
 from tokenizers import Tokenizer
@@ -115,7 +119,7 @@ from scripts.chat import load_model, stream_generate
 
 device = "mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu"
 tokenizer = Tokenizer.from_file("tokenizer/tokenizer.json")
-model, _, _, _ = load_model("experiments/exp_019_perfect_alignment/checkpoints/best.pt", device=device)
+model, _, source, _ = load_model("experiments/exp_019_perfect_alignment/checkpoints/best.pt", device=device)
 
 prompt = "System: You are danAI, a helpful AI assistant.\n\nUser: If I have 10 mangoes and eat 3, how many are left?\n\nAssistant: "
 stream_generate(model=model, tokenizer=tokenizer, prompt=prompt, device=device, tools_enabled=True)
@@ -143,7 +147,7 @@ stream_generate(model=model, tokenizer=tokenizer, prompt=prompt, device=device, 
 ## 🛠️ Repository Structure
 
 ```
-SLM/
+danAI-55M/
 ├── configs/
 │   ├── model.yaml              # 54.5M model architecture specification
 │   ├── train.yaml              # Pretraining configuration
@@ -153,7 +157,7 @@ SLM/
 │   ├── train.jsonl             # High-quality SFT training dataset
 │   └── val.jsonl               # Validation dataset
 ├── scripts/
-│   ├── chat.py                 # Interactive terminal assistant with agentic tool loop
+│   ├── chat.py                 # Interactive terminal assistant (auto-pulls HF weights)
 │   ├── run_hf_benchmark_comparison.py # Full academic benchmark evaluation harness
 │   ├── train_sft.py            # Supervised fine-tuning engine
 │   ├── train.py                # Pretraining engine
@@ -181,10 +185,11 @@ SLM/
   author = {Asjad Ilahi},
   title = {danAI-55M-Reasoning: Ultra-Lightweight Agentic and Reasoning Language Model},
   year = {2026},
-  publisher = {Hugging Face},
+  publisher = {Hugging Face & GitHub},
   howpublished = {\url{https://huggingface.co/asjadilahi/danAI-55M-Reasoning}}
 }
 ```
 
 * **License**: Apache 2.0 (Open-source, commercial use permitted)
 * **Author**: Asjad Ilahi ([@asjadilahi](https://huggingface.co/asjadilahi))
+
