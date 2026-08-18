@@ -58,15 +58,23 @@ def export_hf_model(
         print("  ✓ Loaded raw state_dict")
 
     # Clean state dict keys
-    cleaned_state_dict = {}
+    cleaned_fp32 = {}
+    cleaned_bf16 = {}
     for k, v in state_dict.items():
         clean_k = k.replace("_orig_mod.", "").replace("module.", "")
-        cleaned_state_dict[clean_k] = v.contiguous()
+        v_contig = v.contiguous()
+        cleaned_fp32[clean_k] = v_contig.to(torch.float32)
+        cleaned_bf16[clean_k] = v_contig.to(torch.bfloat16)
 
-    # Save as model.safetensors
-    safetensors_path = out_dir / "model.safetensors"
-    save_file(cleaned_state_dict, str(safetensors_path))
-    print(f"  ✓ Saved {safetensors_path} ({safetensors_path.stat().st_size / (1024*1024):.1f} MB)")
+    # 1. Save default BF16 (104 MB) for fast download & edge RAM
+    safetensors_bf16_path = out_dir / "model.safetensors"
+    save_file(cleaned_bf16, str(safetensors_bf16_path))
+    print(f"  ✓ Saved default BFloat16 weights: {safetensors_bf16_path} ({safetensors_bf16_path.stat().st_size / (1024*1024):.1f} MB)")
+
+    # 2. Save full-precision FP32 (208 MB) for master precision research
+    safetensors_fp32_path = out_dir / "model.fp32.safetensors"
+    save_file(cleaned_fp32, str(safetensors_fp32_path))
+    print(f"  ✓ Saved full precision FP32 weights: {safetensors_fp32_path} ({safetensors_fp32_path.stat().st_size / (1024*1024):.1f} MB)")
 
     # 2. Config JSON
     print("\n[2/5] Creating Hugging Face config.json...")
@@ -88,7 +96,7 @@ def export_hf_model(
         "tie_word_embeddings": True,
         "rope_theta": 10000.0,
         "rope_scaling": None,
-        "torch_dtype": "float32",
+        "torch_dtype": "bfloat16",
         "transformers_version": "5.15.0",
         "total_parameters": 54525952,
         "model_name": "danAI-55M-Reasoning",
