@@ -281,6 +281,14 @@ def load_model(
         cleaned[clean_k] = v
 
     model.load_state_dict(cleaned, strict=False)
+    
+    # Cast to BF16/FP16 on accelerator devices for 104MB footprint
+    if device in ["mps", "cuda"]:
+        try:
+            model = model.to(torch.bfloat16)
+        except Exception:
+            model = model.to(torch.float16)
+            
     model.to(device)
     model.eval()
     return model, cfg, source_desc, loaded_ema

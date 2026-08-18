@@ -155,7 +155,6 @@ def export_hf_model(
     readme_content = """---
 language:
 - en
-- ur
 license: apache-2.0
 tags:
 - danai
